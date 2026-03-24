@@ -23,7 +23,6 @@
       margin-bottom: 10px;
     }
 
-  
     .wheel-wrap {
       position: relative;
       width: 320px;
@@ -99,6 +98,48 @@
     button:hover {
       opacity: 0.95;
     }
+
+    .big-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      background: white;
+      color: #d63384;
+      padding: 30px 40px;
+      border-radius: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      opacity: 0;
+      z-index: 10;
+      transition: all 0.4s ease;
+      overflow: visible;
+    }
+
+    .big-message.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .sparkle {
+      position: absolute;
+      font-size: 18px;
+      pointer-events: none;
+      animation: sparkle-pop 1.2s ease-out forwards;
+    }
+
+    @keyframes sparkle-pop {
+      0% {
+        opacity: 1;
+        transform: scale(0.6);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-30px) scale(1.3);
+      }
+    }
   </style>
 </head>
 <body>
@@ -112,6 +153,8 @@
 
   <button onclick="spinWheel()">Spin</button>
 
+  <div id="bigMessage" class="big-message"></div>
+
   <script>
     const messages = [
       "Have a beautiful day!",
@@ -123,15 +166,47 @@
 
     const wheel = document.getElementById("wheel");
     const centerText = document.getElementById("centerText");
+    const bigMessage = document.getElementById("bigMessage");
 
     let currentRotation = 0;
     let spinning = false;
+
+    function createSparklesAroundMessage() {
+      const positions = [
+        { x: "0%", y: "50%" },
+        { x: "100%", y: "50%" },
+        { x: "50%", y: "0%" },
+        { x: "50%", y: "100%" },
+        { x: "10%", y: "10%" },
+        { x: "90%", y: "10%" },
+        { x: "10%", y: "90%" },
+        { x: "90%", y: "90%" }
+      ];
+
+      for (let i = 0; i < 12; i++) {
+        const sparkle = document.createElement("div");
+        sparkle.classList.add("sparkle");
+        sparkle.textContent = "✨";
+
+        const pos = positions[Math.floor(Math.random() * positions.length)];
+        sparkle.style.left = pos.x;
+        sparkle.style.top = pos.y;
+
+        bigMessage.appendChild(sparkle);
+
+        setTimeout(() => {
+          sparkle.remove();
+        }, 1200);
+      }
+    }
 
     function spinWheel() {
       if (spinning) return;
       spinning = true;
 
       centerText.textContent = "💖";
+      bigMessage.classList.remove("show");
+      bigMessage.innerHTML = "";
 
       const selectedIndex = Math.floor(Math.random() * messages.length);
       const segmentAngle = 360 / messages.length;
@@ -144,7 +219,18 @@
       wheel.style.transform = `rotate(${currentRotation}deg)`;
 
       setTimeout(() => {
-        centerText.textContent = messages[selectedIndex];
+        const message = messages[selectedIndex];
+
+        centerText.textContent = message;
+        bigMessage.textContent = message;
+        bigMessage.classList.add("show");
+
+        createSparklesAroundMessage();
+
+        setTimeout(() => {
+          bigMessage.classList.remove("show");
+        }, 2500);
+
         spinning = false;
       }, 4000);
     }
